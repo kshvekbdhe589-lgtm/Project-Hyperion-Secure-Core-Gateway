@@ -1,0 +1,511 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local StarterGui = game:GetService("StarterGui")
+local Debris = game:GetService("Debris")
+
+local LocalPlayer = Players.LocalPlayer
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+
+local promoCodes = {
+    "lov3bug", "blockybrains", "thecheese", "jokesonu", "hackthemainframe",
+    "mamboitaliano", "itsfrenchforcoupdetat", "chunkychocolate", "uckoirsh",
+    "swingbattabatta", "landdownunder", "wuggyhugs", "farmergray",
+    "babyitscoldoutside", "thetrades", "winterarc", "feliznavidad",
+    "gobblegobble", "saltisspicy", "tedsonvaca", "dingdong", "ur2slow",
+    "iamsteve", "elontruck", "pureimagination", "uvebeengnomed!",
+    "gotanygrapes?", "quickswap", "smileforthecamera", "secretrecipe",
+    "veryimportant", "pizzatime!!", "R-A-N-D-O", "Doodle", "firstnaf",
+    "kingofthepirates", "steprightup!", "jumpinjaks", "BoingBoing!",
+    "funkimunkii", "FantasticPlastic", "whonewit?", "Kreekcraft",
+    "b5nb5n", "stoked", "categg", "doilookpretty", "pingu", "miaminights",
+    "letsgetweird", "heartburn", "ewww", "holasoyd0ra", "b4nb4n",
+    "Itsalive!", "metacarpus", "kawa11", "m3rry", "meoooow", "thursday",
+    "candy", "fifi", "yodome", "daegg", "callmemaybe", "aredsword",
+    "youspinme", "halloweenie", "lachancla", "popit1year", "whaaaaaa",
+    "pepto", "lasagna", "******", "1337", "throne", "m0dn4r", "Juego",
+    "baila", "fotito", "squid", "code", "trippy", "eeek", "90sec",
+    "upupup", "noclip", "naughtyornice", "armor?", "no", "100k", "gub",
+    "wth", "portal", "p\195\161jaro", "r41nb0w", "gummy", "farmer", "lightemup",
+    "pineapple", "sugar", "popit!", "kitty", "stuffi", "cupid", "tako",
+    "buff", "ice", "sus", "Loot", "Tony", "2022", "chance",
+    "juaniday2021", "spooky21", "quidditch", "crystal"
+}
+
+local Library = loadstring(game:HttpGet("https://github.com/BloxCrypto/Modal/releases/download/v1.0-beta/main.lua"))()
+
+local Window = Library:CreateWindow({
+    Title = "GG-HUB",
+    SubTitle = "New v4.1 | Premium",
+    Icon = "rbxassetid://16276571409",
+    MinimumSize = Vector2.new(500, 350)
+})
+
+local TabPlayer = Window:AddTab("Player")
+local TabAuto = Window:AddTab("Auto")
+local TabWorld = Window:AddTab("World")
+local TabCraft = Window:AddTab("Craft")
+local TabVisual = Window:AddTab("Visual")
+local TabVulns = Window:AddTab("Vulns")
+local TabEvil = Window:AddTab("Evil")
+local TabFun = Window:AddTab("Fun")
+local TabServer = Window:AddTab("Server")
+local TabCodes = Window:AddTab("Codes")
+local TabSettings = Window:AddTab("Settings")
+
+TabPlayer:Toggle({
+    Name = "Show Inventory",
+    Description = "Enable or disable the hotbar",
+    DefaultValue = true,
+    Callback = function(val)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, val)
+    end
+})
+
+TabPlayer:Button({
+    Name = "Clear Tools",
+    Description = "Removes all tools from your backpack",
+    Callback = function()
+        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                tool:Destroy()
+            end
+        end
+    end
+})
+
+TabPlayer:Toggle({
+    Name = "Anti Grab",
+    Description = "Prevents you from grabbing your dropped items",
+    DefaultValue = false,
+    Callback = function(val)
+        local dropped = workspace:FindFirstChild("Dropped")
+        if dropped then
+            for _, item in pairs(dropped:GetChildren()) do
+                local handle = item:FindFirstChild("Handle")
+                if handle then
+                    handle.CanTouch = not val
+                end
+            end
+        end
+    end
+})
+
+TabPlayer:Toggle({
+    Name = "Freeze",
+    Description = "freeze so you stay in place",
+    DefaultValue = false,
+    Callback = function(val)
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.Anchored = val
+        end
+    end
+})
+
+TabPlayer:Toggle({
+    Name = "Anti Sit",
+    Description = "Prevents your character from sitting",
+    DefaultValue = false,
+    Callback = function(val)
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:SetStateEnabled(Enum.HumanoidStateType.Seated, not val)
+            if val and hum:GetState() == Enum.HumanoidStateType.Seated then
+                hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
+        end
+    end
+})
+
+TabPlayer:Button({
+    Name = "Safe Place",
+    Description = "Spawns a platform and TPs You",
+    Callback = function()
+        local platform = Instance.new("Part")
+        platform.Size = Vector3.new(30, 2, 30)
+        platform.Position = Vector3.new(0, 1000, 0)
+        platform.Anchored = true
+        platform.CanCollide = true
+        platform.BrickColor = BrickColor.new("Cyan")
+        platform.Parent = workspace
+        
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.CFrame = platform.CFrame + Vector3.new(0, 5, 0)
+        end
+    end
+})
+
+local speedJumpValue = 16
+TabPlayer:Input({
+    Name = "Speed / Jump Value",
+    Description = "Enter a number then press Set WalkSpeed or Set JumpPower",
+    Placeholder = "e.g. 32 or 100",
+    Callback = function(val)
+        speedJumpValue = tonumber(val) or 16
+    end
+})
+
+TabPlayer:Button({
+    Name = "Set WalkSpeed",
+    Description = "Applies the input value to your WalkSpeed",
+    Callback = function()
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.WalkSpeed = speedJumpValue
+        end
+    end
+})
+
+TabPlayer:Button({
+    Name = "Set JumpPower",
+    Description = "Applies the input value to your JumpPower",
+    Callback = function()
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.UseJumpPower = true
+            hum.JumpPower = speedJumpValue
+        end
+    end
+})
+
+TabPlayer:Button({
+    Name = "Fly",
+    Description = "Load fly gui",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastefy.app/bPK2nXvU/raw"))()
+    end
+})
+
+local autoGrabLoop = false
+TabAuto:Toggle({
+    Name = "Auto Grab All",
+    Description = "auto grabs all your dropped items",
+    DefaultValue = false,
+    Callback = function(val)
+        autoGrabLoop = val
+        task.spawn(function()
+            while autoGrabLoop do
+                local dropped = workspace:FindFirstChild("Dropped")
+                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if dropped and root then
+                    for _, item in pairs(dropped:GetChildren()) do
+                        local handle = item:FindFirstChild("Handle")
+                        if handle then
+                            firetouchinterest(root, handle, 0)
+                            firetouchinterest(root, handle, 1)
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+TabAuto:Toggle({
+    Name = "Anti AFK",
+    Description = "Prevents disconnect kick",
+    DefaultValue = false,
+    Callback = function(val)
+        if val then
+            LocalPlayer.Idled:Connect(function()
+                game:GetService("VirtualUser"):Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                game:GetService("VirtualUser"):Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+            end)
+        end
+    end
+})
+
+local fastDropItem = ""
+TabAuto:Input({
+    Name = "Item Name",
+    Description = "Item name...",
+    Placeholder = "Item name...",
+    Callback = function(val)
+        fastDropItem = val
+    end
+})
+
+TabAuto:Button({
+    Name = "Collect & drop",
+    Description = "Fast Drop",
+    Callback = function()
+        if fastDropItem ~= "" then
+            RemoteEvents:WaitForChild("Equip"):FireServer(fastDropItem)
+            RemoteEvents:WaitForChild("Drop"):FireServer(fastDropItem)
+        end
+    end
+})
+
+TabAuto:Toggle({
+    Name = "Auto Buy",
+    Description = "Buys item in a loop",
+    DefaultValue = false,
+    Callback = function(val)
+        task.spawn(function()
+            while val do
+                if fastDropItem ~= "" then
+                    RemoteEvents:WaitForChild("BuyItemCash"):FireServer(fastDropItem)
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+})
+
+TabAuto:Toggle({
+    Name = "Auto Sell",
+    Description = "Equips then sells item in a loop",
+    DefaultValue = false,
+    Callback = function(val)
+        task.spawn(function()
+            while val do
+                for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        RemoteEvents:WaitForChild("Sell"):FireServer(tool)
+                    end
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+})
+
+TabWorld:Button({
+    Name = "Remove VIP Fields",
+    Description = "Deletes VIP Walls",
+    Callback = function()
+        local map = workspace:FindFirstChild("Map")
+        if map then
+            for _, obj in pairs(map:GetDescendants()) do
+                if obj.Name:find("VIP") and (obj:IsA("BasePart") or obj:IsA("Model")) then
+                    obj:Destroy()
+                end
+            end
+        end
+    end
+})
+
+TabWorld:Button({
+    Name = "Remove Group Wall",
+    Description = "Deletes group wall to enter",
+    Callback = function()
+        local map = workspace:FindFirstChild("Map")
+        if map then
+            local groupReward = map:FindFirstChild("GroupReward")
+            if groupReward and groupReward:FindFirstChild("Field") then
+                groupReward.Field:Destroy()
+            end
+        end
+    end
+})
+
+TabWorld:Button({
+    Name = "Remove Map Objects",
+    Description = "Clears decorations, boards, candy realm etc.",
+    Callback = function()
+        local map = workspace:FindFirstChild("Map")
+        if map then
+            local targets = {
+                "Boards", "GoldenToilet", "bubbles", "CandyRealm",
+                "MorsRealm", "Hampires", "Decorations", "ClothingRack",
+                "FeaturedItem", "FirstWinner", "WeeklyDrop", "CodePad"
+            }
+            for _, target in pairs(targets) do
+                local obj = map:FindFirstChild(target)
+                if obj then
+                    obj:Destroy()
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Input({
+    Name = "NetWorth",
+    Description = "only available for leadboard visiual",
+    Placeholder = "e.g. 1B or 500k",
+    Callback = function(val)
+        LocalPlayer:SetAttribute("NetWorth", val)
+    end
+})
+
+TabVisual:Input({
+    Name = "AssetVal",
+    Description = "Applies the value LEADBOARD Item Net Worths",
+    Placeholder = "e.g. 30B or 500M",
+    Callback = function(val)
+        LocalPlayer:SetAttribute("AssetVal", val)
+    end
+})
+
+TabVisual:Input({
+    Name = "CashVal",
+    Description = "Applies the value LEADBOARD Net CASH Worth",
+    Placeholder = "e.g. 1M or 250k",
+    Callback = function(val)
+        LocalPlayer:SetAttribute("CashVal", val)
+    end
+})
+
+TabVisual:Button({
+    Name = "Make Me VIP",
+    Description = "Sets you VIP as Visual, check leadboard after using",
+    Callback = function()
+        LocalPlayer:SetAttribute("VIP", true)
+    end
+})
+
+TabVisual:Toggle({
+    Name = "Enable X-Ray",
+    Description = "Gives you xray value shower on plots while trading",
+    DefaultValue = false,
+    Callback = function(val)
+        local plots = workspace:FindFirstChild("Plots")
+        if plots then
+            for _, part in pairs(plots:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name == "Value" then
+                    part.Transparency = val and 0 or 1
+                end
+            end
+        end
+    end
+})
+
+TabVulns:Button({
+    Name = "Inf Dumpling Spawner",
+    Description = "Dont enjoy it tm.",
+    Callback = function()
+        RemoteEvents:WaitForChild("OpenSpawnerReward"):InvokeServer("Dumpling")
+    end
+})
+
+TabVulns:Button({
+    Name = "Infinite Mini Box drop",
+    Description = "inf drop = inf loots",
+    Callback = function()
+        RemoteEvents:WaitForChild("OpenSpawnerReward"):InvokeServer("Mini Box")
+    end
+})
+
+TabVulns:Button({
+    Name = "Infinite White Loot drop",
+    Description = "Infinite White Loot drop",
+    Callback = function()
+        RemoteEvents:WaitForChild("OpenSpawnerReward"):InvokeServer("White Loot")
+    end
+})
+
+TabVulns:Button({
+    Name = "Infinite Pink Loot drop",
+    Description = "Infinite Pink Loot drop",
+    Callback = function()
+        RemoteEvents:WaitForChild("OpenSpawnerReward"):InvokeServer("Pink Loot")
+    end
+})
+
+TabVulns:Button({
+    Name = "Infinite Red Loot drop",
+    Description = "Infinite Red Loot drop",
+    Callback = function()
+        RemoteEvents:WaitForChild("OpenSpawnerReward"):InvokeServer("Red Loot")
+    end
+})
+
+TabCodes:Button({
+    Name = "Redeem all known codes",
+    Description = "Redeems all known codes",
+    Callback = function()
+        for _, code in ipairs(promoCodes) do
+            RemoteEvents:WaitForChild("RequestCode"):InvokeServer(code)
+            task.wait(0.15)
+        end
+    end
+})
+
+TabServer:Button({
+    Name = "Rejoin",
+    Description = "Reconnects you to this server",
+    Callback = function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
+})
+
+TabServer:Button({
+    Name = "Server Hop",
+    Description = "Picks a random server and joins it",
+    Callback = function()
+        local url = "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true"
+        local response = game:HttpGet(url)
+        local data = HttpService:JSONDecode(response)
+        if data and data.data then
+            local servers = {}
+            for _, s in ipairs(data.data) do
+                if s.playing < s.maxPlayers and s.id ~= game.JobId then
+                    table.insert(servers, s.id)
+                end
+            end
+            if #servers > 0 then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+            end
+        end
+    end
+})
+
+TabServer:Button({
+    Name = "Server Hop Small",
+    Description = "Finds a low player server and joins it",
+    Callback = function()
+        local url = "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Asc&limit=100&excludeFullGames=true"
+        local response = game:HttpGet(url)
+        local data = HttpService:JSONDecode(response)
+        if data and data.data and #data.data > 0 then
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, data.data[1].id, LocalPlayer)
+        end
+    end
+})
+
+TabFun:Button({
+    Name = "Load Infinite Yield",
+    Description = "Loads the Infinite Yield admin script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end
+})
+
+TabFun:Button({
+    Name = "GG-CHAT",
+    Description = "Loads GGHUB Special Chat Hub for our users!",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastefy.app/PTdxLBVh/raw"))()
+    end
+})
+
+TabSettings:Dropdown({
+    Name = "Theme",
+    Description = "Default theme options",
+    Options = {"Light", "Dark", "Midnight", "Rose", "Emerald", "Vampire", "Golden", "Ocean", "Vibe"},
+    DefaultValue = "Dark",
+    Callback = function(theme)
+        Library:SetTheme(theme)
+    end
+})
+
+TabSettings:Button({
+    Name = "Destroy GUI",
+    Description = "Click to get rid of the UI (can't be brought back)",
+    Callback = function()
+        local coreGui = game:GetService("CoreGui")
+        local ui = coreGui:FindFirstChild("GGHUB") or coreGui:FindFirstChild("GGHubKeyUI")
+        if ui then
+            ui:Destroy()
+        end
+    end
+})
